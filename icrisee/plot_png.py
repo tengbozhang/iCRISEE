@@ -27,6 +27,7 @@ class Plot_map:
         self.samplelist = samplelist
         self.df = pd.read_csv("{}/map.txt".format(self.prefix),sep="\t",index_col=0)
         self.dfp = None
+        self.dpi = 300
         self.plot_bar()
         self.plot_bar_percentage()
         self.plot_pie()
@@ -37,7 +38,7 @@ class Plot_map:
         ax.legend(bbox_to_anchor=(1.0, 1.0))
         plt.ylabel("Read Counts")
 #        plt.title("Alignment Bar Plot")
-        plt.savefig("{}/02map/mapped.png".format(self.prefix),bbox_inches = 'tight')
+        plt.savefig("{}/02map/mapped.png".format(self.prefix),bbox_inches = 'tight',dpi = self.dpi)
 
 
     def plot_bar_percentage(self):
@@ -49,14 +50,14 @@ class Plot_map:
         plt.ylabel("Read Counts Percentage")
 #        plt.title("Alignment Bar Plot(percentage)")
 
-        plt.savefig("{}/02map/mapped_percent.png".format(self.prefix),bbox_inches = 'tight')
+        plt.savefig("{}/02map/mapped_percent.png".format(self.prefix),bbox_inches = 'tight', dpi = self.dpi)
     def plot_pie(self):
         plt.clf()
         for i in range(len(self.samplelist)):
             plt.subplot(2,2,i+1) 
             self.df.iloc[:,i].plot.pie(autopct='%1.1f%%', shadow=True,label = self.samplelist[i])
 #        plt.title("Alignment Pie Plot")
-        plt.savefig("{}/02map/mapped_pie.png".format(self.prefix),bbox_inches = 'tight')
+        plt.savefig("{}/02map/mapped_pie.png".format(self.prefix),bbox_inches = 'tight', dpi = self.dpi)
 
 class Plot_count:
     def __init__(self,prefix,name):
@@ -65,6 +66,7 @@ class Plot_count:
         self.df = pd.read_csv("{}/{}".format(self.prefix,self.name),sep="\t")
         self.df_clean = pd.read_csv("{}/02sgRNA/{}_clean.tsv".format(self.prefix,self.prefix),sep="\t") 
         self.samplelist = self.df.columns[2:]
+        self.dpi = 300
         self.plot_c()
 
     def lorenz_curve(self,X,sample):
@@ -80,7 +82,7 @@ class Plot_count:
         plt.xlabel('Cumulative Fraction of sgRNA', fontweight='bold')
         plt.ylabel("Cumulative Fraction of Reads", fontweight='bold')
         plt.title("Lorenz plot of sample {}\nGini:{}".format(sample,self.gini(X,sample)))
-        plt.savefig("{}/01Count/lorenz_{}.png".format(self.prefix,sample),bbox_inches = 'tight')
+        plt.savefig("{}/01Count/lorenz_{}.png".format(self.prefix,sample),bbox_inches = 'tight', dpi = self.dpi)
     def gini(self,arr,sample):
         n = len(arr)
         coef_ = 2. / n
@@ -93,13 +95,13 @@ class Plot_count:
         plt.title("Reads distribution of sample {}".format(sample))
         plt.xlabel(xlabel)
         plt.ylabel("Number of sgRNAs")
-        plt.savefig("{}/01Count/Distribution_{}.png".format(self.prefix,sample),bbox_inches = 'tight')
+        plt.savefig("{}/01Count/Distribution_{}.png".format(self.prefix,sample),bbox_inches = 'tight', dpi = self.dpi)
     def correlation(self):
         plt.clf()
         corr = self.df.corr()
-        sns.heatmap(corr, xticklabels=corr.columns.values,yticklabels=corr.columns.values,cmap="vlag")
+        sns.heatmap(corr, xticklabels=corr.columns.values,yticklabels=corr.columns.values,cmap="bwr")
         plt.title("Sample Correlation")
-        plt.savefig("{}/01Count/samples_correlation.png".format(self.prefix),bbox_inches = 'tight')
+        plt.savefig("{}/01Count/samples_correlation.png".format(self.prefix),bbox_inches = 'tight', dpi = self.dpi)
         
     def plot_c(self):
 ############lorenz,distrubution
@@ -128,6 +130,8 @@ class Plot_sgRNA:
         self.sg = pd.read_csv("{}/02sgRNA/df_{}.csv".format(self.prefix,self.model),sep="\t")
         self.sg_top = self.sg.iloc[:200,:]
         self.samplelist = self.df.columns[2:]
+        self.dpi = 300
+
         self.top_sg()
     def top_sg(self):
         plt.clf()
@@ -159,7 +163,7 @@ class Plot_sgRNA:
             group.plot(ax=ax, kind='scatter', x='log2_ctr_mean', y='log2_treat_mean',label=key, color=colors[key],s=2)
 
 #        plt.scatter(np.log2(self.sg_top["ctr_mean"]),np.log2(self.sg_top["treat_mean"]),s=2,color="red")
-        plt.savefig("{}/02sgRNA/scatter.png".format(self.prefix),bbox_inches = 'tight')
+        plt.savefig("{}/02sgRNA/scatter.png".format(self.prefix),bbox_inches = 'tight', dpi = self.dpi)
             
 class Plot_gene:
     def __init__(self,prefix,name,sgrank,generank,pathway):
@@ -172,9 +176,11 @@ class Plot_gene:
         self.sg = pd.read_csv("{}/02sgRNA/df_{}.csv".format(self.prefix,self.sgrank),sep="\t")
         self.gene_top = self.df.iloc[:self.pathway,:]
         self.gene_top["Gene"].to_csv("{}/03Gene/topgene.txt".format(self.prefix),header=False,index=None)
+        self.dpi = 300
         
         self.top_gene()
     def top_gene(self):
+        
         self.genes = list(self.df.Gene[:self.pathway])
 #########top 200 gene
 
@@ -191,7 +197,7 @@ class Plot_gene:
             plt.plot(x,y)
             plt.xlabel("sgRNA index,sgRNA rank:{}".format("|".join([str(i) for i in ind])))
             plt.ylabel(gene)
-            plt.savefig("{}/03Gene/Top/{:03d}_{}.png".format(self.prefix,self.genes.index(gene)+1,gene),bbox_inches = 'tight')
+            plt.savefig("{}/03Gene/Top/{:03d}_{}.jpg".format(self.prefix,self.genes.index(gene)+1,gene),bbox_inches = 'tight', dpi = self.dpi )
 
 
 ##########gene score plot
@@ -217,16 +223,19 @@ class Plot_gene:
 
 #        plt.scatter(self.df.pindex,self.df["score"],s=2)
 #        plt.scatter(self.gene_top.pindex,self.gene_top["score"],s=2,color="red")
-        plt.savefig("{}/03Gene/Gene.png".format(self.prefix),bbox_inches = 'tight')
+        plt.savefig("{}/03Gene/Gene.jpg".format(self.prefix),bbox_inches = 'tight', dpi = self.dpi)
 
 class Plot_pathway:
     def __init__(self,prefix,pathn):
         self.prefix = prefix
         self.pathn = pathn
+        self.dpi = 300
+
         self.df = None
         self.run_gsea()
     def run_gsea(self):
-        enr = gp.enrichr(gene_list="{}/03Gene/topgene.txt".format(self.prefix),
+        try:
+            enr = gp.enrichr(gene_list="{}/03Gene/topgene.txt".format(self.prefix),
                      gene_sets= "KEGG_2016",#"c2.cp.kegg.v7.4.symbols.gmt",#'KEGG_2016',
                      organism='Human', # don't forget to set organism to the one you desired! e.g. Yeast
                      description="pathway",#self.prefix,
@@ -234,34 +243,35 @@ class Plot_pathway:
                      # no_plot=True,
                      cutoff=0.5 # test dataset, use lower value from range(0,1)
                     )
-        colnames = ["Gene_set","Term","Overlap","P-value","aP-value","oP-value","oaP-value","Odds","Combied-score","genes"]
-        self.df = pd.read_csv("{}/04Pathway/KEGG_2016.pathway.enrichr.reports.txt".format(self.prefix),sep="\t")
-        self.df.columns = colnames
-        self.df = self.df[["Term","aP-value","Odds","Combied-score"]]
-        self.df = self.df.iloc[:10,:]
-        plt.clf()
-        plt.barh(self.df["Term"],-np.log10(self.df["aP-value"]))
-        plt.xlabel("-log10(Adjusted P-value)")
-        plt.title("Bar plot of top10 enriched pathway")
-        plt.savefig("{}/04Pathway/kegg_bar.png".format(self.prefix),bbox_inches = 'tight')
-        plt.clf()
-        g=sns.scatterplot(x=-np.log10(self.df["aP-value"]),y=self.df["Term"],hue=self.df["Combied-score"],s=self.df["Combied-score"],cmap="coolwarm")
-        g.get_legend().remove()
+            colnames = ["Gene_set","Term","Overlap","P-value","aP-value","oP-value","oaP-value","Odds","Combied-score","genes"]
+            self.df = pd.read_csv("{}/04Pathway/KEGG_2016.pathway.enrichr.reports.txt".format(self.prefix),sep="\t")
+            self.df.columns = colnames
+            self.df = self.df[["Term","aP-value","Odds","Combied-score"]]
+            self.df = self.df.iloc[:10,:]
+            plt.clf()
+            plt.barh(self.df["Term"],-np.log10(self.df["aP-value"]))
+            plt.xlabel("-log10(Adjusted P-value)")
+            plt.title("Bar plot of top10 enriched pathway")
+            plt.savefig("{}/04Pathway/kegg_bar.png".format(self.prefix),bbox_inches = 'tight', dpi = 200)
+            plt.clf()
+            g=sns.scatterplot(x=-np.log10(self.df["aP-value"]),y=self.df["Term"],hue=self.df["Combied-score"],s=self.df["Combied-score"],cmap="coolwarm")
+            g.get_legend().remove()
 #        plt.scatter(-np.log10(self.df["aP-value"]),self.df["Term"],s=self.df["Combied-score"]) 
-        plt.xlabel("-log10(Adjusted P-value)")
-        plt.title("Dot plot of top10 enriched pathway")
-        plt.savefig("{}/04Pathway/kegg_dot.png".format(self.prefix),bbox_inches = 'tight')
-
+            plt.xlabel("-log10(Adjusted P-value)")
+            plt.title("Dot plot of top10 enriched pathway")
+            plt.savefig("{}/04Pathway/kegg_dot.png".format(self.prefix),bbox_inches = 'tight', dpi = self.dpi)
+        except:
+            print("gsea error")
 
 if __name__ == "__main__":
-    ma = Plot_map("MZcTEQP9TD",["Control1","Control2","Treat1","Treat2"])
+#    ma = Plot_map("MZcTEQP9TD",["Control1","Control2","Treat1","Treat2"])
 #    Plot_count("leuke","leuke.csv")
 #    Plot_sgRNA("leuke","leuke.csv","nb")
 #    Plot_gene("leuke","leuke.csv","nb","grra",200)
 #    Plot_pathway("leuke",200)
 #    Plot_count("cd47","cd47.txt")
 #    Plot_sgRNA("cd47","cd47.txt","nb")
-#    Plot_gene("cd47","cd47.txt","nb","grra",2000)
+    Plot_gene("cd47","cd47.txt","nb","grra",200)
 #    Plot_pathway("cd47",200)
     #Plot_sgRNA("mhc1c","mhc1c.txt","nb")
 #

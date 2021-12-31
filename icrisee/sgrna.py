@@ -11,6 +11,19 @@ import pandas as pd
 import numpy as np
 from sklearn.metrics import r2_score
 from pathlib import Path
+def check_path( path):
+    """
+    生成对应文件夹\n
+    argv:\n
+        logger：日志对象\n
+        path：需要确认的路径\n
+    用于确保path路径的存在，即如果文件夹不存在则创建文件夹\n
+    example:\n
+        check_path(logger,'mydir')\n
+    """
+    if not os.path.exists(path):
+        os.makedirs(path)
+
 class Build_model:
     def __init__(self,count,prefix="test",ctr=[2,3],treat=[4,5],basicnum = 0,controlsg=1,alpha = 0.05,padj= "fdr_tsbh",delta = 1):
         self.alpha = alpha
@@ -21,12 +34,10 @@ class Build_model:
         self.count = count
         self.ctr = ctr
         self.treat = treat
-        
-        Path(prefix).mkdir(parents=True, exist_ok=True)
-        Path(prefix+"/01Count").mkdir(parents=True, exist_ok=True)
-        Path(prefix+"/02sgRNA").mkdir(parents=True, exist_ok=True)
-        Path(prefix+"/03Gene/Top").mkdir(parents=True, exist_ok=True)
-        Path(prefix+"/04Pathway").mkdir(parents=True, exist_ok=True)
+        check_path(f"/tmp/{self.prefix}/01Count") 
+        check_path(f"/tmp/{self.prefix}/02sgRNA")
+        check_path(f"/tmp/{self.prefix}/03Gene/Top")
+        check_path(f"/tmp/{self.prefix}/04Pathway")
         self.df = None
         self.basicnum = basicnum
         self.ctr_mean = None
@@ -34,19 +45,22 @@ class Build_model:
         self.model_ctr_mean = None
         self.model_ctr_var = None
         self.treat_mean = None
-        if controlsg == 1:
-            self.controlsg = pd.read_csv(self.prefix+"/controlsg.txt",sep="\t",header=None).iloc[:,0].to_list()
-        else:
-            self.controlsg = pd.read_csv("{}".format(self.count),sep="\t").iloc[:,0].to_list()
-        self.norfile = "{}/02sgRNA/{}_nor.tsv".format(self.prefix,self.prefix)
-        self.cleanfile = "{}/02sgRNA/{}_clean.tsv".format(self.prefix,self.prefix)
+        try:
+            if controlsg == 1:
+                self.controlsg = pd.read_csv(f"/tmp/{self.prefix}/controlsg.txt",sep="\t",header=None).iloc[:,0].to_list()
+            else:
+                self.controlsg = pd.read_csv(f"/tmp/{self.prefix}/{self.count}",sep="\t").iloc[:,0].to_list()
+        except:
+            self.controlsg = []
+        self.norfile = f"/tmp/{self.prefix}/02sgRNA/{self.prefix}_nor.tsv"
+        self.cleanfile = f"/tmp/{self.prefix}/02sgRNA/{self.prefix}_clean.tsv"
         self.clean()
         self.normalize_data()
         self.get_ctr_mean_variance()
         
-        self.fc_fname = "{}/02sgRNA/df_fc.csv".format(self.prefix)
-        self.nb_fname = "{}/02sgRNA/df_nb.csv".format(self.prefix)
-        self.pos_fname = "{}/02sgRNA/df_pos.csv".format(self.prefix)
+        self.fc_fname = f"/tmp/{self.prefix}/02sgRNA/df_fc.csv"
+        self.nb_fname = f"/tmp/{self.prefix}/02sgRNA/df_nb.csv"
+        self.pos_fname = f"/tmp/{self.prefix}/02sgRNA/df_pos.csv"
         self.run()
     def clean(self):
         self.df = pd.read_csv(self.count, sep = "\t").sort_values(["Gene"])
@@ -168,15 +182,18 @@ class Build_model:
 
 ####main workflow
 if __name__ == "__main__":
+    Build_model("parp7/parp7.txt","parp7",ctr=[4,5],treat=[2,3],basicnum = 0,controlsg=0)
+
+#    Build_model("cellr/cellr.tsv","cellr",ctr=[8,9],treat=[6,7],basicnum = 0,controlsg=0)
     #Build_model("mhc1c/mhc1c.txt","mhc1c",ctr=[2],treat=[3],basicnum = 0,controlsg=0)
 #    Build_model("mhc1c/mhc1c.txt","mhc1c_neg",ctr=[2],treat=[3],basicnum = -10,controlsg=0)
-    Build_model("leuke3_rep4/leuke.txt","leuke3_rep4",ctr=[4,5],treat=[2,3],basicnum = 0,controlsg=0)
-    Build_model("leuke4_rep4/leuke.txt","leuke4_rep4",ctr=[4,5],treat=[2,3],basicnum = 0,controlsg=0)
-    Build_model("leuke5_rep4/leuke.txt","leuke5_rep4",ctr=[4,5],treat=[2,3],basicnum = 0,controlsg=0)
-    Build_model("leuke6_rep4/leuke.txt","leuke6_rep4",ctr=[4,5],treat=[2,3],basicnum = 0,controlsg=0)
-    Build_model("leuke7_rep4/leuke.txt","leuke7_rep4",ctr=[4,5],treat=[2,3],basicnum = 0,controlsg=0)
-    Build_model("leuke8_rep4/leuke.txt","leuke8_rep4",ctr=[4,5],treat=[2,3],basicnum = 0,controlsg=0)
-    Build_model("leuke9_rep4/leuke.txt","leuke9_rep4",ctr=[4,5],treat=[2,3],basicnum = 0,controlsg=0)
+#    Build_model("leuke3_rep4/leuke.txt","leuke3_rep4",ctr=[4,5],treat=[2,3],basicnum = 0,controlsg=0)
+#    Build_model("leuke4_rep4/leuke.txt","leuke4_rep4",ctr=[4,5],treat=[2,3],basicnum = 0,controlsg=0)
+#    Build_model("leuke5_rep4/leuke.txt","leuke5_rep4",ctr=[4,5],treat=[2,3],basicnum = 0,controlsg=0)
+#    Build_model("leuke6_rep4/leuke.txt","leuke6_rep4",ctr=[4,5],treat=[2,3],basicnum = 0,controlsg=0)
+#    Build_model("leuke7_rep4/leuke.txt","leuke7_rep4",ctr=[4,5],treat=[2,3],basicnum = 0,controlsg=0)
+#    Build_model("leuke8_rep4/leuke.txt","leuke8_rep4",ctr=[4,5],treat=[2,3],basicnum = 0,controlsg=0)
+#    Build_model("leuke9_rep4/leuke.txt","leuke9_rep4",ctr=[4,5],treat=[2,3],basicnum = 0,controlsg=0)
 #    Build_model("leuke/leuke.txt","leuke",ctr=[2,3],treat=[4,5],basicnum = 0,controlsg=0)
 
 #    Build_model("mhc1c/mhc1c.txt","mhc1c_4",ctr=[2],treat=[3],basicnum = 4,controlsg=0)

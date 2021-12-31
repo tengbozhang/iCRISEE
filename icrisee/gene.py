@@ -55,7 +55,10 @@ class Generank:
         self.df_rank["pos_neg"] =  np.where(self.df_rank.fc > 1,"pos","neg")
         self.genes = self.df_rank.Gene.unique()
         self.df_rank["nor_rank"] = (self.df_rank.index+1)/np.shape(self.df_rank)[0]
-        self.controlgene = self.df_rank[self.df_rank.sgRNA.isin(self.controlsg)].Gene
+        try:
+            self.controlgene = self.df_rank[self.df_rank.sgRNA.isin(self.controlsg)].Gene
+        except:
+            self.controlgene = []
         self.get_general_sg() 
         self.run()
     def run(self):
@@ -197,7 +200,7 @@ class Generank:
         gene_final["pvalue"] = np.array(pvalue)
 #        gene_final["sgRNAS"] = self.guide
         gene_final["goodsg"] = goodsg
-        gene_final = gene_final.sort_values("pvalue").reset_index(drop=True)
+        gene_final = gene_final.sort_values(["pvalue","score"]).reset_index(drop=True)
         gene_final["fdr"] = gene_final.pvalue*len(self.genes)/(gene_final.index+1)
         gene_final = gene_final[~gene_final.Gene.isin(self.controlgene)]
         gene_final.to_csv(self.rotfile,sep = "\t", index=None) 
@@ -220,7 +223,7 @@ class Generank:
         gene_final["pvalue"] = np.array(pvalue)
 #        gene_final["sgRNAS"] = self.guide
         gene_final["goodsg"] = goodsg
-        gene_final = gene_final.sort_values("pvalue").reset_index(drop=True)
+        gene_final = gene_final.sort_values(["pvalue",'score']).reset_index(drop=True)
         gene_final["fdr"] = gene_final.pvalue*len(self.genes)/(gene_final.index+1)
         gene_final = gene_final[~gene_final.Gene.isin(self.controlgene)]
         gene_final.to_csv(self.rrafile,sep = "\t", index=None)
@@ -273,15 +276,19 @@ class Generank:
         gene_final.to_csv(self.sigsfile,sep = "\t", index=None)
 
 if __name__ == "__main__":
+
+    Generank("parp7","nb","grra",5,0,200)
+
+#    Generank("cellr","nb","grra",3,0,200)
 #    Generank("mela","nb","grra",5,0,20000)
 #    Generank("leuke","nb","grra",10,0,200)
-    Generank("leuke3_rep4","nb","grra",3,0,200)
-    Generank("leuke4_rep4","nb","grra",4,0,200)
-    Generank("leuke5_rep4","nb","grra",5,0,200)
-    Generank("leuke6_rep4","nb","grra",6,0,200)
-    Generank("leuke7_rep4","nb","grra",7,0,200)
-    Generank("leuke8_rep4","nb","grra",8,0,200)
-    Generank("leuke9_rep4","nb","grra",9,0,200)
+#    Generank("leuke3_rep4","nb","grra",3,0,200)
+#    Generank("leuke4_rep4","nb","grra",4,0,200)
+#    Generank("leuke5_rep4","nb","grra",5,0,200)
+#    Generank("leuke6_rep4","nb","grra",6,0,200)
+#    Generank("leuke7_rep4","nb","grra",7,0,200)
+#    Generank("leuke8_rep4","nb","grra",8,0,200)
+#    Generank("leuke9_rep4","nb","grra",9,0,200)
 
 #    Generank("cd47","nb","grra",5,0,20000)
 #    Generank("mhc1c","nb","all",5,0,200000)
